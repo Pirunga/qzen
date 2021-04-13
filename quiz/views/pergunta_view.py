@@ -1,6 +1,12 @@
 from flask import Blueprint, request, current_app
 from http import HTTPStatus
 import random
+from flask_jwt_extended import (
+    get_jwt_identity,
+    create_access_token,
+    create_refresh_token,
+    jwt_required,
+)
 
 from quiz.models.pergunta_model import PerguntaModel
 from quiz.models.alternativa_model import AlternativaModel
@@ -17,7 +23,14 @@ def todas_pergutnas():
     try:
         perguntas = PerguntaModel.query.all()
 
-        response = [{"id": pergunta.id, "resposta": pergunta.resposta, "temas": [tema.nome for tema in pergunta.tema_list]} for pergunta in perguntas]
+        response = [
+            {
+                "id": pergunta.id,
+                "resposta": pergunta.resposta,
+                "temas": [tema.nome for tema in pergunta.tema_list],
+            }
+            for pergunta in perguntas
+        ]
 
         return {"data": response}, HTTPStatus.OK
 
@@ -39,19 +52,32 @@ def pergunta_aleatoria():
             if not found_tema:
                 return {"msg": "This 'tema' doesn't exist."}, HTTPStatus.BAD_REQUEST
 
-            pergunta = random.choice(session.query(PerguntaModel).join(PerguntaTemaModel).filter(PerguntaTemaModel.tema_id == found_tema.id).all())
-            response = {"id": pergunta.id, "resposta": pergunta.resposta, "temas": [tema.nome for tema in pergunta.tema_list]}
+            pergunta = random.choice(
+                session.query(PerguntaModel)
+                .join(PerguntaTemaModel)
+                .filter(PerguntaTemaModel.tema_id == found_tema.id)
+                .all()
+            )
+            response = {
+                "id": pergunta.id,
+                "resposta": pergunta.resposta,
+                "temas": [tema.nome for tema in pergunta.tema_list],
+            }
 
             return {"data": response}, HTTPStatus.OK
 
         pergunta = random.choice(PerguntaModel.query.all())
-        response = {"id": pergunta.id, "resposta": pergunta.resposta, "temas": [tema.nome for tema in pergunta.tema_list]}
+        response = {
+            "id": pergunta.id,
+            "resposta": pergunta.resposta,
+            "temas": [tema.nome for tema in pergunta.tema_list],
+        }
 
         return {"data": response}, HTTPStatus.OK
 
     except:
 
-       return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
+        return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["GET"])
@@ -59,7 +85,11 @@ def pergunta_por_id(pergunta_id):
     try:
         pergunta = PerguntaModel.query.get(pergunta_id)
 
-        response = {"id": pergunta.id, "resposta": pergunta.resposta, "temas": pergunta.tema_list}
+        response = {
+            "id": pergunta.id,
+            "resposta": pergunta.resposta,
+            "temas": pergunta.tema_list,
+        }
 
         return {"data": response}, HTTPStatus.OK
 
@@ -72,9 +102,9 @@ def pergunta_por_id(pergunta_id):
         return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
-@bp_pergunta.route("/", methods=["POST"])
-def criar_pergunta_nova():
-    ...
+@bp_pergunta.route("/<int:pergunta_id>", methods=["POST"])
+def criar_pergunta_nova(pergunta_id):
+    body = request.get_json()
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
