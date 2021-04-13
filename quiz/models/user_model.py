@@ -19,7 +19,9 @@ class UserModel(db.Model):
 
 
 def db_connection():
-    return connect(dbname="qzen", user="admin", password="admin", port="5432", host="localhost")
+    return connect(
+        dbname="qzen", user="admin", password="admin", port="5432", host="localhost"
+    )
 
 
 def bd_query_post_users_register(name, email, password):
@@ -29,15 +31,20 @@ def bd_query_post_users_register(name, email, password):
     questions_list = "TESTE {}".format(str(ids))
     cur = connection.cursor()
 
-    cur.execute("""INSERT INTO "user"
+    cur.execute(
+        """INSERT INTO "user"
     (id, "name", "email", "password", "questions_list")
     values
      ({},'{}','{}','{}','{}')
-    ;""".format(int(ids), name, email, password, questions_list))
+    ;""".format(
+            int(ids), name, email, password, questions_list
+        )
+    )
 
     try:
         cur.fetchall()
         response = {"name": name, "email": email}
+
     except:
         response = "Bad request"
 
@@ -52,11 +59,16 @@ def bd_query_post_users_login(email, password):
 
     cur = connection.cursor()
 
-    cur.execute("""SELECT * FROM user WHERE "email" = '{}' AND "password" = '{}';""".format(email, password))
+    cur.execute(
+        """SELECT * FROM user WHERE "email" = '{}' AND "password" = '{}';""".format(
+            email, password
+        )
+    )
 
     try:
         fetch = cur.fetchall()
         response = {"id": fetch[0], "nome": fetch[1]}
+
     except:
         response = False
 
