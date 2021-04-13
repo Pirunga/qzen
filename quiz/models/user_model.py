@@ -12,5 +12,5 @@ class UserModel(db.Model):
     lista_perguntas = db.relationship(
         "PerguntaModel",
         lazy="joined",
-        backref=db.backref("pergunta", lazy="joined"),
+        backref=db.backref("question", lazy="joined"),
     )
