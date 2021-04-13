@@ -59,11 +59,8 @@ def bd_query_post_users_login(email, password):
 
     cur = connection.cursor()
 
-    cur.execute(
-        """SELECT * FROM user WHERE "email" = '{}' AND "password" = '{}';""".format(
-            email, password
-        )
-    )
+
+    cur.execute("""SELECT * FROM "user" WHERE "email" = '{}' AND "password" = '{}';""".format(email, password))
 
     try:
         fetch = cur.fetchall()
