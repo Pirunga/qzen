@@ -3,7 +3,10 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 from datetime import timedelta
 from http import HTTPStatus
 
-
+# from quiz.models.pergunta_model import PerguntaModel
+# from quiz.models.alternativa_model import AlternativaModel
+# from quiz.models.pergunta_tema_model import PerguntaTemaModel
+# from quiz.models.tema_model import TemaModel
 from quiz.models.user_model import (
     bd_query_post_users_register,
     bd_query_delete_id_user,
