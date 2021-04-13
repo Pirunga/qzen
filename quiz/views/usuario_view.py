@@ -31,7 +31,10 @@ def logar_usuario():
     if response == False:
         return HTTPStatus.BAD_REQUEST
     else:
-        return response, HTTPStatus.OK
+        access_token = create_access_token(identity=response.id, expires_delta=timedelta(days=5))
+        refresh_token = create_refresh_token(identity=response.id, expires_delta=timedelta(days=15))
+        return {"response": response, "access_token":access_token, "refresh_token": refresh_token }, HTTPStatus.OK
+
 
 
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])
