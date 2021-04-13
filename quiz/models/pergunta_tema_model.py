@@ -14,6 +14,6 @@ class PerguntaTemaModel(db.Model):
 
     tema_id = db.Column(
         db.Integer,
-        db.ForeignKey("temas.id", opudate="CASCADE", ondelete="CASCADE"),
+        db.ForeignKey("temas.id", onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
     )
