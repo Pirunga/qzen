@@ -14,6 +14,6 @@ class AlternativaModel(db.Model):
     lista_pergunta = db.relationship(
         "PerguntaModel",
         lazy="joined",
-        useList=False,
+        uselist=False,
         backref=db.backref("pergunta", lazy="joined"),
     )
