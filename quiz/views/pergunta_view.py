@@ -103,8 +103,23 @@ def pergunta_por_id(pergunta_id):
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["POST"])
+@jwt_required()
 def criar_pergunta_nova(pergunta_id):
+    session = current_app.db.session
     body = request.get_json()
+
+    try:
+        pergunta = body.get('pergunta')
+        resposta = body.get('resposta')
+
+        nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta)
+        session.add(nova_pergunta)
+        session.commit()
+
+        return {"msg": "Created question"}, HTTPStatus.CREATED
+
+    except:
+        return {"msg": "Verify your request"}, HTTPStatus.BAD_REQUEST
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
