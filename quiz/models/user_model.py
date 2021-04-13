@@ -47,6 +47,24 @@ def bd_query_post_users_register(name, email, password):
     return response
 
 
+def bd_query_post_users_login(email, password):
+    connection = db_connection()
+
+    cur = connection.cursor()
+
+    cur.execute("""SELECT * FROM user WHERE "email" = '{}' AND "password" = '{}';""".format(email, password))
+
+    try:
+        fetch = cur.fetchall()
+        response = {"id": fetch[0], "nome": fetch[1]}
+    except:
+        response = False
+
+    connection.commit()
+    connection.close()
+    return response
+
+
 def bd_query_delete_id_user(ids):
     connection = db_connection()
 
