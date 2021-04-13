@@ -1,1 +1,1 @@
-from qzen.quiz.configurations.database import db
+from quiz.configurations.database import db
