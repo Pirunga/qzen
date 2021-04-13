@@ -22,7 +22,7 @@ def db_connection():
     return connect(dbname="qzen", user="admin", password="admin", port="5432", host="localhost")
 
 
-def bd_query_post_users(name, email, password):
+def bd_query_post_users_register(name, email, password):
     connection = db_connection()
 
     ids = random.randint(0, 1000)
@@ -37,9 +37,9 @@ def bd_query_post_users(name, email, password):
 
     try:
         cur.fetchall()
-        response = "Status 200 Ok"
+        response = {"name": name, "email": email}
     except:
-        response = "Query executed"
+        response = "Bad request"
 
     connection.commit()
     cur.close()
