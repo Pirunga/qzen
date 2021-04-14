@@ -3,8 +3,5 @@ venv
 .idea
 .env
 .vscode
-migrations
-*/__pychace__
-**/__pychace__
-***/__pychace__
+**/__pycache__
 **/.pytest_cache

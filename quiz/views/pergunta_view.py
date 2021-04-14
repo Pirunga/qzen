@@ -67,6 +67,7 @@ def pergunta_aleatoria():
             return {"data": response}, HTTPStatus.OK
 
         pergunta = random.choice(PerguntaModel.query.all())
+
         response = {
             "id": pergunta.id,
             "resposta": pergunta.resposta,
@@ -108,11 +109,13 @@ def criar_pergunta_nova(pergunta_id):
     session = current_app.db.session
     body = request.get_json()
 
+    usuario_id = get_jwt_identity()
+
     try:
         pergunta = body.get('pergunta')
         resposta = body.get('resposta')
 
-        nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta)
+        nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta, usuario_id=usuario_id)
         session.add(nova_pergunta)
         session.commit()
 
@@ -127,7 +130,12 @@ def criar_pergunta_nova(pergunta_id):
 def deletar_pergunta(pergunta_id):
     session = current_app.db.session
 
+    usuario_id = get_jwt_identity()
+
     pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
+
+    if usuario_id != pergunta.usuario_id:
+        return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
 
     if not pergunta:
         return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
@@ -145,7 +153,12 @@ def atualizar_pergunta(pergunta_id):
         session = current_app.db.session
         body = request.get_json()
 
+        usuario_id = get_jwt_identity()
+
         pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
+
+        if usuario_id != pergunta.usuario_id:
+            return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
 
         if not pergunta:
             return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
@@ -158,11 +171,11 @@ def atualizar_pergunta(pergunta_id):
         session.commit()
 
         return {
-            "pergunta": {
-                "pergunta": pergunta.pergunta,
-                "resposta": pergunta.resposta
-            }
-        }, HTTPStatus.OK
+                   "pergunta": {
+                       "pergunta": pergunta.pergunta,
+                       "resposta": pergunta.resposta
+                   }
+               }, HTTPStatus.OK
 
     except KeyError:
         return {'msg': 'Verify the request body'}, HTTPStatus.BAD_REQUEST
