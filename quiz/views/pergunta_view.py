@@ -121,8 +121,9 @@ def criar_pergunta_nova(pergunta_id):
 
         return {"msg": "Created question"}, HTTPStatus.CREATED
 
-    except KeyError:
-        return {"msg": "Verify the request body"}, HTTPStatus.BAD_REQUEST
+    except:
+        return {"msg": "Verify your request"}, HTTPStatus.BAD_REQUEST
+
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
