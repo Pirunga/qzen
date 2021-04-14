@@ -118,15 +118,44 @@ def criar_pergunta_nova(pergunta_id):
 
         return {"msg": "Created question"}, HTTPStatus.CREATED
 
-    except:
-        return {"msg": "Verify your request"}, HTTPStatus.BAD_REQUEST
+    except KeyError:
+        return {"msg": "Verify the request body"}, HTTPStatus.BAD_REQUEST
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
+@jwt_required()
 def deletar_pergunta(pergunta_id):
-    ...
+    session = current_app.db.session
+
+    pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
+
+    if not pergunta:
+        return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
+
+    session.delete(pergunta)
+    session.commit()
+
+    return {'msg': 'Question deleted'}, HTTPStatus.OK
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["PATCH", "PUT"])
+@jwt_required()
 def atualizar_pergunta(pergunta_id):
-    ...
+    session = current_app.db.session
+    body = request.get_json()
+
+    pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
+
+    if not pergunta:
+        return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
+
+    for key, value in body.items():
+        if value and key != 'id':
+            pergunta[key] = value
+
+    return {
+        "pergunta": {
+            "pergunta": pergunta.pergunta,
+            "resposta": pergunta.resposta
+        }
+    }, HTTPStatus.OK
