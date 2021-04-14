@@ -141,21 +141,28 @@ def deletar_pergunta(pergunta_id):
 @bp_pergunta.route("/<int:pergunta_id>", methods=["PATCH", "PUT"])
 @jwt_required()
 def atualizar_pergunta(pergunta_id):
-    session = current_app.db.session
-    body = request.get_json()
+    try:
+        session = current_app.db.session
+        body = request.get_json()
 
-    pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
+        pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
 
-    if not pergunta:
-        return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
+        if not pergunta:
+            return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
 
-    for key, value in body.items():
-        if value and key != 'id':
-            pergunta[key] = value
+        for key, value in body.items():
+            if value and key != 'id':
+                pergunta[key] = value
 
-    return {
-        "pergunta": {
-            "pergunta": pergunta.pergunta,
-            "resposta": pergunta.resposta
-        }
-    }, HTTPStatus.OK
+        session.add(pergunta)
+        session.commit()
+
+        return {
+            "pergunta": {
+                "pergunta": pergunta.pergunta,
+                "resposta": pergunta.resposta
+            }
+        }, HTTPStatus.OK
+
+    except KeyError:
+        return {'msg': 'Verify the request body'}, HTTPStatus.BAD_REQUEST
