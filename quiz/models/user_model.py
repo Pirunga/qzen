@@ -20,7 +20,8 @@ class UserModel(db.Model):
     def password(self):
         raise TypeError("A senha não pode ser acessada")
 
-    @password.selter
+
+    @password.setter
     def password(self, new_password):
         new_password_hash = generate_password_hash(new_password)
         self.password_hash = new_password_hash

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, current_app
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
 from datetime import timedelta
 from http import HTTPStatus
 
@@ -42,6 +42,25 @@ def novo_usuario():
         "fresh_token": fresh_token,
     }, HTTPStatus.CREATED
 
+@bp_usuario.route("/login", methods=["POST"])
+def login_user():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    found_user: UserModel = UserModel.query.filter_by(email=email).first()
+
+    if not found_user or not found_user.check_password(password):
+        return {"msg": "Usuário não encontrado."}, HTTPStatus.BAD_REQUEST
+
+    access_token = create_access_token(
+        identity=found_user.id, expires_delta=timedelta(days=5)
+    )
+    fresh_token = create_access_token(
+        identity=found_user.id, fresh=True, expires_delta=timedelta(days=15)
+    )
+
+    return {"access_token": access_token, "fresh_token": fresh_token}
 
 
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])
@@ -50,10 +69,13 @@ def perguntas_do_usuario(usuario_id):
 
 
 @bp_usuario.route("/<int:usuario_id>", methods=["DELETE"])
+@jwt_required(refresh=True)
 def deletar_usuario(usuario_id):
     session = current_app.db
-    found_user = PostModel.querry.get(usuario_id)
-    PostModel.delete(found_user)
+
+    found_user = UserModel.querry.get(usuario_id)
+    UserModel.delete(found_user)
+
 
     session.commit()
 
