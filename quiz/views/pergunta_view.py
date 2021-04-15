@@ -21,17 +21,40 @@ bp_pergunta = Blueprint("pergunta_view", __name__, url_prefix="/pergunta")
 @bp_pergunta.route("/", methods=["GET"])
 def todas_pergutnas():
     try:
+        given_tema = request.args.get("tema")
+
+        if given_tema:
+
+            session = current_app.db.session
+            found_tema = TemaModel.query.filter(TemaModel.tema == given_tema).first()
+
+            if not found_tema:
+                return {"msg": "This 'tema' doesn't exist."}, HTTPStatus.BAD_REQUEST
+            
+            perguntas = session.query(PerguntaModel).join(PerguntaTemaModel).filter(PerguntaTemaModel.tema_id == found_tema.id).all()
+            
+            response = [
+            {
+                "id": pergunta.id,
+                "resposta": pergunta.resposta,
+                "temas": [tema.tema for tema in pergunta.tema_list],
+            }
+            for pergunta in perguntas
+        ]
+
+            return {"data": response}, HTTPStatus.OK
+
         perguntas = PerguntaModel.query.all()
 
         response = [
             {
                 "id": pergunta.id,
                 "resposta": pergunta.resposta,
-                "temas": [tema.nome for tema in pergunta.tema_list],
+                "temas": [tema.tema for tema in pergunta.tema_list],
             }
             for pergunta in perguntas
         ]
-
+        
         return {"data": response}, HTTPStatus.OK
 
     except:
@@ -47,7 +70,7 @@ def pergunta_aleatoria():
         if given_tema:
 
             session = current_app.db.session
-            found_tema = TemaModel.query.filter(TemaModel.nome == given_tema).first()
+            found_tema = TemaModel.query.filter(TemaModel.tema == given_tema).first()
 
             if not found_tema:
                 return {"msg": "This 'tema' doesn't exist."}, HTTPStatus.BAD_REQUEST
@@ -61,7 +84,7 @@ def pergunta_aleatoria():
             response = {
                 "id": pergunta.id,
                 "resposta": pergunta.resposta,
-                "temas": [tema.nome for tema in pergunta.tema_list],
+                "temas": [tema.tema for tema in pergunta.tema_list],
             }
 
             return {"data": response}, HTTPStatus.OK
@@ -71,7 +94,7 @@ def pergunta_aleatoria():
         response = {
             "id": pergunta.id,
             "resposta": pergunta.resposta,
-            "temas": [tema.nome for tema in pergunta.tema_list],
+            "temas": [tema.tema for tema in pergunta.tema_list],
         }
 
         return {"data": response}, HTTPStatus.OK
