@@ -6,9 +6,10 @@ class UserModel(db.Model):
     __tablename__ = "usuarios"
 
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String, nullable=False)
-    email = db.Column(db.String, nullable=False)
+    nome = db.Column(db.String, nullable=False, unique=True)
+    email = db.Column(db.String, nullable=False, unique=True)
     password_hash = db.Column(db.String, nullable=False)
+    usuario_pontos = db.Column(db.Integer, nullable=False)
 
     lista_perguntas = db.relationship(
         "PerguntaModel",
@@ -20,7 +21,6 @@ class UserModel(db.Model):
     def password(self):
         raise TypeError("A senha não pode ser acessada")
 
-
     @password.setter
     def password(self, new_password):
         new_password_hash = generate_password_hash(new_password)
@@ -28,5 +28,3 @@ class UserModel(db.Model):
 
     def check_password(self, password_to_compare):
         return check_password_hash(self.password_hash, password_to_compare)
-
-
