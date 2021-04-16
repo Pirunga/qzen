@@ -3,8 +3,6 @@ from http import HTTPStatus
 import random
 from flask_jwt_extended import (
     get_jwt_identity,
-    create_access_token,
-    create_refresh_token,
     jwt_required,
 )
 
@@ -126,9 +124,9 @@ def pergunta_por_id(pergunta_id):
         return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
-@bp_pergunta.route("/<int:pergunta_id>", methods=["POST"])
+@bp_pergunta.route("/", methods=["POST"])
 @jwt_required()
-def criar_pergunta_nova(pergunta_id):
+def criar_pergunta_nova():
     session = current_app.db.session
     body = request.get_json()
 
@@ -139,13 +137,23 @@ def criar_pergunta_nova(pergunta_id):
         resposta = body.get('resposta')
 
         nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta, usuario_id=usuario_id)
+
         session.add(nova_pergunta)
+        session.commit()
+
+        alternativas = body.get('alternativas')
+
+        alternativas["pergunta_id"] = nova_pergunta.id
+
+        nova_alternativas: AlternativaModel = AlternativaModel(**alternativas)
+
+        session.add(nova_alternativas)
         session.commit()
 
         return {"msg": "Created question"}, HTTPStatus.CREATED
 
     except AttributeError:
-        return {"msg": "Verify your request"}, HTTPStatus.BAD_REQUEST
+        return {"msg": "Verify body request"}, HTTPStatus.BAD_REQUEST
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
@@ -180,11 +188,11 @@ def atualizar_pergunta(pergunta_id):
 
         pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
 
-        if usuario_id != pergunta.usuario_id:
-            return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
-
         if not pergunta:
             return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
+
+        if usuario_id != pergunta.usuario_id:
+            return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
 
         for key, value in body.items():
             if value and key != 'id':
