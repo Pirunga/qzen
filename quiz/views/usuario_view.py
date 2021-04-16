@@ -89,13 +89,14 @@ def perguntas_do_usuario(usuario_id):
         }, HTTPStatus.OK
 
 
-@bp_usuario.route("/<int:usuario_id>", methods=["DELETE"])
+@bp_usuario.route("/", methods=["DELETE"])
 @jwt_required(refresh=True)
-def deletar_usuario(usuario_id):
+def deletar_usuario():
     session = current_app.db
 
-    found_user = UserModel.query.get(usuario_id)
-    UserModel.delete(found_user)
+    id_user = get_jwt_identity()
+    found_user = UserModel.query.get(id_user)
+    session.delete(found_user)
 
     session.commit()
 
