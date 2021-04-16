@@ -77,7 +77,6 @@ def deletar_usuario(usuario_id):
     found_user = UserModel.querry.get(usuario_id)
     UserModel.delete(found_user)
 
-
     session.commit()
 
     return {"msg": "Usuário deletado"}, HTTPStatus.OK
