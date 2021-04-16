@@ -22,7 +22,7 @@ def novo_usuario():
     email = data.get("email")
     password = data.get("senha")
 
-    usuario = UserModel(nome=nome, email=email)
+    usuario = UserModel(nome=nome, email=email, usuario_pontos=0)
     usuario.password = password
 
     access_token = create_access_token(
