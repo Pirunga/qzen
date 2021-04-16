@@ -88,6 +88,7 @@ def perguntas_do_usuario(usuario_id):
                 ]
         }, HTTPStatus.OK
 
+
 @bp_usuario.route("/<int:usuario_id>", methods=["DELETE"])
 @jwt_required(refresh=True)
 def deletar_usuario(usuario_id):
