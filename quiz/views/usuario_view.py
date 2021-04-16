@@ -1,5 +1,5 @@
 from flask import Blueprint, request, current_app
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from datetime import timedelta
 from http import HTTPStatus
 
@@ -47,7 +47,7 @@ def novo_usuario():
 def login_user():
     data = request.get_json()
     email = data.get("email")
-    password = data.get("password")
+    password = data.get("senha")
 
     found_user: UserModel = UserModel.query.filter_by(email=email).first()
 
@@ -66,15 +66,34 @@ def login_user():
 
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])
 def perguntas_do_usuario(usuario_id):
-    ...
-
+    
+    usuario = UserModel.query.get(usuario_id)
+    
+    if not usuario:
+        
+        return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
+    
+    else:
+        
+        perguntas = usuario.lista_perguntas
+        
+        return {
+            'usuario_id': usuario.id,
+            'nome': usuario.nome,
+            'perguntas': [
+                {   'id': p.id,
+                    'pergunta': p.pergunta, 
+                    'resposta': p.resposta
+                } for p in perguntas
+                ]
+        }, HTTPStatus.OK
 
 @bp_usuario.route("/<int:usuario_id>", methods=["DELETE"])
 @jwt_required(refresh=True)
 def deletar_usuario(usuario_id):
     session = current_app.db
 
-    found_user = UserModel.querry.get(usuario_id)
+    found_user = UserModel.query.get(usuario_id)
     UserModel.delete(found_user)
 
     session.commit()
@@ -83,5 +102,36 @@ def deletar_usuario(usuario_id):
 
 
 @bp_usuario.route("/<int:usuario_id>", methods=["PATCH", "PUT"])
+@jwt_required()
 def atualizar_usuario(usuario_id):
-    ...
+    
+    session = current_app.db.session
+    
+    id_user = get_jwt_identity()
+    user = UserModel.query.get(id_user)
+    
+    if not user:
+        
+        return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
+
+    else:
+         
+        body = request.get_json()
+        user_name = body.get('nome')
+        user_email = body.get('email')
+        
+        if not user_name and not user_email:
+            
+            return {'msg': 'Atributos inválidos'}, HTTPStatus.BAD_REQUEST
+                    
+        if user_name:
+            user.nome = user_name
+            
+        if user_email:
+            user.email = user_email       
+        
+        session.add(user)
+        session.commit()
+        
+        return {'msg': 'Usuário atualizado com sucesso'}, HTTPStatus.OK
+        
