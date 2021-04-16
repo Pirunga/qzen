@@ -42,6 +42,7 @@ def novo_usuario():
         "fresh_token": fresh_token,
     }, HTTPStatus.CREATED
 
+
 @bp_usuario.route("/login", methods=["POST"])
 def login_user():
     data = request.get_json()
@@ -80,6 +81,7 @@ def deletar_usuario(usuario_id):
     session.commit()
 
     return {"msg": "Usuário deletado"}, HTTPStatus.OK
+
 
 @bp_usuario.route("/<int:usuario_id>", methods=["PATCH", "PUT"])
 def atualizar_usuario(usuario_id):

@@ -144,9 +144,8 @@ def criar_pergunta_nova(pergunta_id):
 
         return {"msg": "Created question"}, HTTPStatus.CREATED
 
-    except:
+    except AttributeError:
         return {"msg": "Verify your request"}, HTTPStatus.BAD_REQUEST
-
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
