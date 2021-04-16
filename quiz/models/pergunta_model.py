@@ -10,6 +10,10 @@ class PerguntaModel(db.Model):
 
     usuario_id = db.Column(
         db.Integer,
-        db.ForeignKey("usuarios.id", onupdate="CASCADE", ondelete="CASCADE"),
+        db.ForeignKey(
+            "usuarios.id",
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
         nullable=False,
     )
