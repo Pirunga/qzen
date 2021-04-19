@@ -96,11 +96,16 @@ def deletar_usuario():
 
     id_user = get_jwt_identity()
     found_user = UserModel.query.get(id_user)
-    session.delete(found_user)
 
-    session.commit()
+    if not found_user:
+        return {"msg: Usuário não encontrado"}, HTTPStatus.NOT_FOUND
+    if found_user.id != id_user:
+        return {"msg: Usuário não autorizado."}, HTTPStatus.UNAUTHORIZED
+    else:
+        session.delete(found_user)
 
-    return {"msg": "Usuário deletado"}, HTTPStatus.OK
+        session.commit()
+        return {"msg": "Usuário deletado"}, HTTPStatus.OK
 
 
 @bp_usuario.route("/<int:usuario_id>", methods=["PATCH", "PUT"])
