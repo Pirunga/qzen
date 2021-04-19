@@ -135,10 +135,19 @@ def criar_pergunta_nova():
     try:
         pergunta = body.get('pergunta')
         resposta = body.get('resposta')
+        tema = body.get('tema')
 
         nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta, usuario_id=usuario_id)
 
-        session.add(nova_pergunta)
+        found_tema: TemaModel = TemaModel.query.get(tema)
+
+        if not found_tema:
+            return {'msg': 'Tema not found'}, HTTPStatus.NOT_FOUND
+
+        pergunta_tema: PerguntaTemaModel = PerguntaModel(pergunta_id=nova_pergunta.id, tema_id=found_tema.id)
+
+        session.add_all(nova_pergunta, pergunta_tema)
+
         session.commit()
 
         alternativas = body.get('alternativas')
@@ -154,7 +163,6 @@ def criar_pergunta_nova():
 
     except AttributeError:
         return {"msg": "Verify body request"}, HTTPStatus.BAD_REQUEST
-
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
 @jwt_required()
