@@ -117,7 +117,7 @@ def criar_pergunta_nova():
         nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta, usuario_id=usuario_id)
         session.add(nova_pergunta)
 
-        found_tema: TemaModel = TemaModel.query.get(tema)
+        found_tema: TemaModel = TemaModel.query.filter_by(tema=tema).first()
 
         if not found_tema:
             return {'msg': 'Tema not found'}, HTTPStatus.NOT_FOUND
@@ -141,6 +141,7 @@ def criar_pergunta_nova():
 
     except AttributeError:
         return {"msg": "Verify body request"}, HTTPStatus.BAD_REQUEST
+
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
 @jwt_required()
