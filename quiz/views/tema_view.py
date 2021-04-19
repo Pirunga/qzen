@@ -33,6 +33,11 @@ def atualizar_tema(tema_id):
 
     body = request.get_json()
 
+    new_tema = body.get('tema')
+
+    if not new_tema:
+        return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
+
     found_tema: TemaModel = TemaModel.query.get(tema_id)
 
     if not found_tema:
@@ -41,9 +46,7 @@ def atualizar_tema(tema_id):
     if usuario_id != found_tema.usuario_id:
         return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
 
-    for key, value in body.items():
-        if value and key != 'id':
-            found_tema[key] = value
+    found_tema.tema = new_tema
 
     session.add(found_tema)
     session.commit()
