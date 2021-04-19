@@ -12,6 +12,8 @@ from quiz.models.pergunta_tema_model import PerguntaTemaModel
 from quiz.models.tema_model import TemaModel
 from quiz.models.user_model import UserModel
 
+from quiz.serializers.perguntas_serializer import serialize_perguntas, serialize_pergunta
+
 
 bp_pergunta = Blueprint("pergunta_view", __name__, url_prefix="/pergunta")
 
@@ -31,27 +33,13 @@ def todas_pergutnas():
             
             perguntas = session.query(PerguntaModel).join(PerguntaTemaModel).filter(PerguntaTemaModel.tema_id == found_tema.id).all()
             
-            response = [
-            {
-                "id": pergunta.id,
-                "resposta": pergunta.resposta,
-                "temas": [tema.tema for tema in pergunta.tema_list],
-            }
-            for pergunta in perguntas
-        ]
+            response = response = serialize_perguntas(perguntas)
 
             return {"data": response}, HTTPStatus.OK
 
         perguntas = PerguntaModel.query.all()
 
-        response = [
-            {
-                "id": pergunta.id,
-                "resposta": pergunta.resposta,
-                "temas": [tema.tema for tema in pergunta.tema_list],
-            }
-            for pergunta in perguntas
-        ]
+        response = serialize_perguntas(perguntas)
         
         return {"data": response}, HTTPStatus.OK
 
@@ -79,21 +67,14 @@ def pergunta_aleatoria():
                 .filter(PerguntaTemaModel.tema_id == found_tema.id)
                 .all()
             )
-            response = {
-                "id": pergunta.id,
-                "resposta": pergunta.resposta,
-                "temas": [tema.tema for tema in pergunta.tema_list],
-            }
+
+            response = serialize_pergunta(pergunta)
 
             return {"data": response}, HTTPStatus.OK
 
         pergunta = random.choice(PerguntaModel.query.all())
 
-        response = {
-            "id": pergunta.id,
-            "resposta": pergunta.resposta,
-            "temas": [tema.tema for tema in pergunta.tema_list],
-        }
+        response = serialize_pergunta(pergunta)
 
         return {"data": response}, HTTPStatus.OK
 
@@ -107,11 +88,7 @@ def pergunta_por_id(pergunta_id):
     try:
         pergunta = PerguntaModel.query.get(pergunta_id)
 
-        response = {
-            "id": pergunta.id,
-            "resposta": pergunta.resposta,
-            "temas": pergunta.tema_list,
-        }
+        response = serialize_pergunta(pergunta)
 
         return {"data": response}, HTTPStatus.OK
 
@@ -138,13 +115,14 @@ def criar_pergunta_nova():
         tema = body.get('tema')
 
         nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta, usuario_id=usuario_id)
+        session.add(nova_pergunta)
 
         found_tema: TemaModel = TemaModel.query.get(tema)
 
         if not found_tema:
             return {'msg': 'Tema not found'}, HTTPStatus.NOT_FOUND
 
-        pergunta_tema: PerguntaTemaModel = PerguntaModel(pergunta_id=nova_pergunta.id, tema_id=found_tema.id)
+        pergunta_tema: PerguntaTemaModel = PerguntaTemaModel(pergunta_id=nova_pergunta.id, tema_id=found_tema.id)
 
         session.add_all([nova_pergunta, pergunta_tema])
 
@@ -209,12 +187,9 @@ def atualizar_pergunta(pergunta_id):
         session.add(pergunta)
         session.commit()
 
-        return {
-                   "pergunta": {
-                       "pergunta": pergunta.pergunta,
-                       "resposta": pergunta.resposta
-                   }
-               }, HTTPStatus.OK
+        response = serialize_pergunta(pergunta)
+
+        return {"data": response}, HTTPStatus.OK
 
     except KeyError:
         return {'msg': 'Verify the request body'}, HTTPStatus.BAD_REQUEST
