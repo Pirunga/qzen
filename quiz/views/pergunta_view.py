@@ -146,7 +146,7 @@ def criar_pergunta_nova():
 
         pergunta_tema: PerguntaTemaModel = PerguntaModel(pergunta_id=nova_pergunta.id, tema_id=found_tema.id)
 
-        session.add_all(nova_pergunta, pergunta_tema)
+        session.add_all([nova_pergunta, pergunta_tema])
 
         session.commit()
 
