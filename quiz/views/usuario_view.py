@@ -91,8 +91,8 @@ def deletar_usuario():
     session.delete(found_user)
     session.commit()
 
-        session.commit()
-        return {"msg": "Usuário deletado"}, HTTPStatus.OK
+    session.commit()
+    return {"msg": "Usuário deletado"}, HTTPStatus.OK
 
 
 @bp_usuario.route("/", methods=["PATCH", "PUT"])
