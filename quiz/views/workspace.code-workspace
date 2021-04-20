@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "migrations",
+			"path": "../../../../../../Área de Trabalho/migrations"
+		},
+		{
+			"name": "qzen",
+			"path": "../.."
+		}
+	],
+	"settings": {}
+}

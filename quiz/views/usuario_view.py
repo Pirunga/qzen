@@ -8,6 +8,7 @@ from quiz.models.alternativa_model import AlternativaModel
 from quiz.models.pergunta_tema_model import PerguntaTemaModel
 from quiz.models.tema_model import TemaModel
 from quiz.models.user_model import UserModel
+from quiz.serializers.user_serializer import UserSerializer
 
 
 bp_usuario = Blueprint("usuario_view", __name__, url_prefix="/usuario")
@@ -34,14 +35,10 @@ def novo_usuario():
 
     session.add(usuario)
     session.commit()
+    
+    user_serializer = UserSerializer(usuario.id)
 
-    return {
-        "usuario": usuario.nome,
-        "email": usuario.email,
-        "access_token": access_token,
-        "fresh_token": fresh_token,
-    }, HTTPStatus.CREATED
-
+    return user_serializer, HTTPStatus.CREATED
 
 @bp_usuario.route("/login", methods=["POST"])
 def login_user():
@@ -67,26 +64,17 @@ def login_user():
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])
 def perguntas_do_usuario(usuario_id):
     
-    usuario = UserModel.query.get(usuario_id)
+    usuario_serializer = UserSerializer(usuario_id)
     
-    if not usuario:
+    if not usuario_serializer:
         
         return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
     
     else:
         
-        perguntas = usuario.lista_perguntas
-        
-        return {
-            'usuario_id': usuario.id,
-            'nome': usuario.nome,
-            'perguntas': [
-                {   'id': p.id,
-                    'pergunta': p.pergunta, 
-                    'resposta': p.resposta
-                } for p in perguntas
-                ]
-        }, HTTPStatus.OK
+        return {'id': usuario_serializer['id'],
+                'perguntas': usuario_serializer['perguntas']
+               }, HTTPStatus.OK
 
 
 @bp_usuario.route("/", methods=["DELETE"])
@@ -97,20 +85,19 @@ def deletar_usuario():
     id_user = get_jwt_identity()
     found_user = UserModel.query.get(id_user)
 
-    if not found_user:
-        return {"msg: Usuário não encontrado"}, HTTPStatus.NOT_FOUND
-    if found_user.id != id_user:
-        return {"msg: Usuário não autorizado."}, HTTPStatus.UNAUTHORIZED
-    else:
-        session.delete(found_user)
+    id_user = get_jwt_identity()
+    found_user = UserModel.query.get(id_user)
+    
+    session.delete(found_user)
+    session.commit()
 
         session.commit()
         return {"msg": "Usuário deletado"}, HTTPStatus.OK
 
 
-@bp_usuario.route("/<int:usuario_id>", methods=["PATCH", "PUT"])
+@bp_usuario.route("/", methods=["PATCH", "PUT"])
 @jwt_required()
-def atualizar_usuario(usuario_id):
+def atualizar_usuario():
     
     session = current_app.db.session
     
@@ -126,8 +113,9 @@ def atualizar_usuario(usuario_id):
         body = request.get_json()
         user_name = body.get('nome')
         user_email = body.get('email')
+        user_score = body.get('usuario_pontos')
         
-        if not user_name and not user_email:
+        if not user_name and not user_email and not user_score:
             
             return {'msg': 'Atributos inválidos'}, HTTPStatus.BAD_REQUEST
                     
@@ -135,7 +123,10 @@ def atualizar_usuario(usuario_id):
             user.nome = user_name
             
         if user_email:
-            user.email = user_email       
+            user.email = user_email
+            
+        if user_score:
+            user.usuario_pontos = user_score       
         
         session.add(user)
         session.commit()
