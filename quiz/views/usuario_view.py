@@ -64,17 +64,18 @@ def login_user():
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])
 def perguntas_do_usuario(usuario_id):
     
-    usuario_serializer = UserSerializer(usuario_id)
+    user_serializer = UserSerializer(usuario_id)
     
-    if not usuario_serializer:
+    if not user_serializer:
         
         return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
     
     else:
         
-        return {'id': usuario_serializer['id'],
-                'perguntas': usuario_serializer['perguntas']
-               }, HTTPStatus.OK
+        name = user_serializer.get('nome')
+        questions = user_serializer.get('perguntas')
+        
+        return { 'nome': name, 'perguntas': questions }, HTTPStatus.OK
 
 
 @bp_usuario.route("/", methods=["DELETE"])
@@ -91,7 +92,6 @@ def deletar_usuario():
     session.delete(found_user)
     session.commit()
 
-    session.commit()
     return {"msg": "Usuário deletado"}, HTTPStatus.OK
 
 
@@ -106,7 +106,7 @@ def atualizar_usuario():
     
     if not user:
         
-        return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
+        return { 'msg': 'Usuário não encontrado' }, HTTPStatus.NOT_FOUND
 
     else:
          
@@ -117,7 +117,7 @@ def atualizar_usuario():
         
         if not user_name and not user_email and not user_score:
             
-            return {'msg': 'Atributos inválidos'}, HTTPStatus.BAD_REQUEST
+            return { 'msg': 'Atributos inválidos' }, HTTPStatus.BAD_REQUEST
                     
         if user_name:
             user.nome = user_name
@@ -131,5 +131,5 @@ def atualizar_usuario():
         session.add(user)
         session.commit()
         
-        return {'msg': 'Usuário atualizado com sucesso'}, HTTPStatus.OK
+        return { 'msg': 'Usuário atualizado com sucesso' }, HTTPStatus.OK
         
