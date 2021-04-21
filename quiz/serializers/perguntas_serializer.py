@@ -24,6 +24,7 @@ def serialize_perguntas(perguntas_list):
 
 
 def serialize_pergunta(pergunta):
+    
     alternativas = AlternativaModel.query.filter(AlternativaModel.pergunta_id == pergunta.id).first()
 
     serialized = {

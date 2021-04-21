@@ -1,4 +1,5 @@
 from quiz.models.user_model import UserModel
+from googlesearch import search
 
 def UserSerializer(user_id: int):
     
@@ -19,6 +20,8 @@ def UserSerializer(user_id: int):
             {
             'id': p.id,
             'pergunta': p.pergunta,
-            'resposta': p.respota
-        } for p in lista_perguntas]
+            'resposta': p.resposta,
+            'google_links': search(p.pergunta, num_results=3, lang='pt')
+            } for p in lista_perguntas
+        ]
     }
