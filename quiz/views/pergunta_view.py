@@ -10,7 +10,6 @@ from quiz.models.pergunta_model import PerguntaModel
 from quiz.models.alternativa_model import AlternativaModel
 from quiz.models.pergunta_tema_model import PerguntaTemaModel
 from quiz.models.tema_model import TemaModel
-from quiz.models.user_model import UserModel
 
 from quiz.serializers.perguntas_serializer import serialize_perguntas, serialize_pergunta
 
