@@ -31,10 +31,10 @@ def novo_usuario():
 
     session.add(usuario)
     session.commit()
-    
-    user_serializer = usario_serializer(usuario.id)
 
-    return user_serializer, HTTPStatus.CREATED
+    serialized = usario_serializer(usuario.id)
+
+    return serialized, HTTPStatus.CREATED
 
 
 @bp_usuario.route("/login", methods=["POST"])
@@ -60,14 +60,13 @@ def login_user():
 
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])
 def perguntas_do_usuario(usuario_id):
-    
-    user_serializer = usario_serializer(usuario_id)
-    
-    if not user_serializer:
+    serialized = usario_serializer(usuario_id)
+
+    if not serialized:
         return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
         
-    name = user_serializer.get('nome')
-    questions = user_serializer.get('perguntas')
+    name = serialized.get('nome')
+    questions = serialized.get('perguntas')
         
     return {'nome': name, 'perguntas': questions}, HTTPStatus.OK
 
