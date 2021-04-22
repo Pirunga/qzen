@@ -59,7 +59,7 @@ def login_user():
         identity=found_user.id, fresh=True, expires_delta=timedelta(days=15)
     )
 
-    return {"access_token": access_token, "fresh_token": fresh_token}
+    return {"access_token": access_token, "fresh_token": fresh_token}, HTTPStatus.OK
 
 
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])

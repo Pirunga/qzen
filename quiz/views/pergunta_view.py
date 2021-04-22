@@ -29,7 +29,7 @@ def todas_pergutnas():
             found_tema = TemaModel.query.filter(TemaModel.tema == given_tema).first()
 
             if not found_tema:
-                return {"msg": "This 'tema' doesn't exist."}, HTTPStatus.BAD_REQUEST
+                return {"msg": "Theme not found."}, HTTPStatus.NOT_FOUND
             
             perguntas = session.query(PerguntaModel).join(PerguntaTemaModel).filter(PerguntaTemaModel.tema_id == found_tema.id).all()
             
@@ -57,7 +57,7 @@ def pergunta_aleatoria():
             found_tema = TemaModel.query.filter(TemaModel.tema == given_tema).first()
 
             if not found_tema:
-                return {"msg": "This 'tema' doesn't exist."}, HTTPStatus.BAD_REQUEST
+                return {"msg": "Theme not found"}, HTTPStatus.NOT_FOUND
 
             pergunta = random.choice(
                 session.query(PerguntaModel)
@@ -102,12 +102,13 @@ def criar_pergunta_nova():
     session = current_app.db.session
     body = request.get_json()
 
-    usuario_id = get_jwt_identity()
-
     try:
+        usuario_id = get_jwt_identity()
+
         pergunta = body.get('pergunta')
         resposta = body.get('resposta')
         tema = body.get('tema')
+        alternativas = body.get('alternativas')
 
         nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta, usuario_id=usuario_id)
         session.add(nova_pergunta)
@@ -123,8 +124,6 @@ def criar_pergunta_nova():
 
         session.commit()
 
-        alternativas = body.get('alternativas')
-
         alternativas["pergunta_id"] = nova_pergunta.id
 
         nova_alternativas: AlternativaModel = AlternativaModel(**alternativas)
@@ -134,7 +133,7 @@ def criar_pergunta_nova():
 
         return {"msg": "Created question"}, HTTPStatus.CREATED
 
-    except AttributeError:
+    except:
         return {"msg": "Verify body request"}, HTTPStatus.BAD_REQUEST
 
 
@@ -187,5 +186,5 @@ def atualizar_pergunta(pergunta_id):
 
         return {"data": response}, HTTPStatus.OK
 
-    except KeyError:
+    except:
         return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
