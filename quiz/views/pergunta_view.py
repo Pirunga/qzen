@@ -33,7 +33,7 @@ def todas_pergutnas():
             
             perguntas = session.query(PerguntaModel).join(PerguntaTemaModel).filter(PerguntaTemaModel.tema_id == found_tema.id).all()
             
-            response = response = serialize_perguntas(perguntas)
+            response = serialize_perguntas(perguntas)
 
             return {"data": response}, HTTPStatus.OK
 
@@ -44,7 +44,6 @@ def todas_pergutnas():
         return {"data": response}, HTTPStatus.OK
 
     except:
-
         return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
@@ -54,7 +53,6 @@ def pergunta_aleatoria():
         given_tema = request.args.get("tema")
 
         if given_tema:
-
             session = current_app.db.session
             found_tema = TemaModel.query.filter(TemaModel.tema == given_tema).first()
 
@@ -79,7 +77,6 @@ def pergunta_aleatoria():
         return {"data": response}, HTTPStatus.OK
 
     except:
-
         return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
@@ -93,11 +90,9 @@ def pergunta_por_id(pergunta_id):
         return {"data": response}, HTTPStatus.OK
 
     except AttributeError:
-
-        return {"msg": "This 'pergunta' doesn't exist."}, HTTPStatus.BAD_REQUEST
+        return {"msg": "Question not found."}, HTTPStatus.NOT_FOUND
 
     except Exception:
-
         return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
@@ -193,5 +188,4 @@ def atualizar_pergunta(pergunta_id):
         return {"data": response}, HTTPStatus.OK
 
     except KeyError:
-        return {'msg': 'Verify the request body'}, HTTPStatus.BAD_REQUEST
-
+        return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST

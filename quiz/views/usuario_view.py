@@ -40,6 +40,7 @@ def novo_usuario():
 
     return user_serializer, HTTPStatus.CREATED
 
+
 @bp_usuario.route("/login", methods=["POST"])
 def login_user():
     data = request.get_json()
@@ -67,24 +68,18 @@ def perguntas_do_usuario(usuario_id):
     user_serializer = UserSerializer(usuario_id)
     
     if not user_serializer:
-        
         return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
-    
-    else:
         
-        name = user_serializer.get('nome')
-        questions = user_serializer.get('perguntas')
+    name = user_serializer.get('nome')
+    questions = user_serializer.get('perguntas')
         
-        return { 'nome': name, 'perguntas': questions }, HTTPStatus.OK
+    return {'nome': name, 'perguntas': questions}, HTTPStatus.OK
 
 
 @bp_usuario.route("/", methods=["DELETE"])
 @jwt_required(refresh=True)
 def deletar_usuario():
     session = current_app.db
-
-    id_user = get_jwt_identity()
-    found_user = UserModel.query.get(id_user)
 
     id_user = get_jwt_identity()
     found_user = UserModel.query.get(id_user)
@@ -105,31 +100,26 @@ def atualizar_usuario():
     user = UserModel.query.get(id_user)
     
     if not user:
-        
-        return { 'msg': 'Usuário não encontrado' }, HTTPStatus.NOT_FOUND
+        return {'msg': 'User not found'}, HTTPStatus.NOT_FOUND
 
-    else:
-         
-        body = request.get_json()
-        user_name = body.get('nome')
-        user_email = body.get('email')
-        user_score = body.get('usuario_pontos')
+    body = request.get_json()
+    user_name = body.get('nome')
+    user_email = body.get('email')
+    user_score = body.get('usuario_pontos')
         
-        if not user_name and not user_email and not user_score:
-            
-            return { 'msg': 'Atributos inválidos' }, HTTPStatus.BAD_REQUEST
+    if not user_name and not user_email and not user_score:
+        return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
                     
-        if user_name:
-            user.nome = user_name
+    if user_name:
+        user.nome = user_name
             
-        if user_email:
-            user.email = user_email
+    if user_email:
+        user.email = user_email
             
-        if user_score:
-            user.usuario_pontos = user_score       
+    if user_score:
+        user.usuario_pontos = user_score
         
-        session.add(user)
-        session.commit()
+    session.add(user)
+    session.commit()
         
-        return { 'msg': 'Usuário atualizado com sucesso' }, HTTPStatus.OK
-        
+    return {'msg': 'User is updated'}, HTTPStatus.OK
