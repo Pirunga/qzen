@@ -1,16 +1,8 @@
 from flask import Blueprint, request, current_app
-from flask_jwt_extended import (
-    get_jwt_identity,
-    jwt_required,
-)
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from http import HTTPStatus
-import json
 
-from quiz.models.pergunta_model import PerguntaModel
-from quiz.models.alternativa_model import AlternativaModel
-from quiz.models.pergunta_tema_model import PerguntaTemaModel
 from quiz.models.tema_model import TemaModel
-from quiz.models.user_model import UserModel
 from quiz.serializers.tema_serializer import serializer_temas
 
 bp_tema = Blueprint("tema_view", __name__, url_prefix="/tema")
@@ -26,7 +18,7 @@ def pergunta_do_tema(tema):
     lista = serializer_temas(select)[0]
 
     if len(lista["pergunta_list"]) > 0:
-        return json.dumps(lista["pergunta_list"]), HTTPStatus.FOUND
+        return {lista["pergunta_list"]}, HTTPStatus.FOUND
 
     return {"msg": "Questions not found"}, HTTPStatus.NOT_FOUND
 
