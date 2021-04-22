@@ -14,6 +14,7 @@ class TemaModel(db.Model):
             onupdate="CASCADE",
             ondelete="CASCADE",
         ),
+
         nullable=False,
     )
 

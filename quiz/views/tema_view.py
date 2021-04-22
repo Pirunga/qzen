@@ -4,25 +4,42 @@ from flask_jwt_extended import (
     jwt_required,
 )
 from http import HTTPStatus
+import json
 
 from quiz.models.pergunta_model import PerguntaModel
 from quiz.models.alternativa_model import AlternativaModel
 from quiz.models.pergunta_tema_model import PerguntaTemaModel
 from quiz.models.tema_model import TemaModel
 from quiz.models.user_model import UserModel
-
+from quiz.serializers.tema_serializer import serializer_temas
 
 bp_tema = Blueprint("tema_view", __name__, url_prefix="/tema")
 
 
 @bp_tema.route("/<string:tema>", methods=["GET"])
-def pergunta_aletoria(tema):
-    ...
+def pergunta_do_tema(tema):
+    select = TemaModel.query.filter_by(tema = tema).first()
 
+    lista = serializer_temas(select)[0]
+
+    if len(lista["pergunta_list"]) > 0:
+        return json.dumps(lista["pergunta_list"]), HTTPStatus.FOUND
+
+    return {"msg": "Questions not found"}, HTTPStatus.NOT_FOUND
 
 @bp_tema.route("/", methods=["POST"])
+@jwt_required()
 def novo_tema():
-    ...
+    user_id = get_jwt_identity()
+    body = request.get_json()
+    session = current_app.db.session
+
+    table_theme = TemaModel(tema = body['tema'], usuario_id =  user_id)
+
+    session.add(table_theme)
+    session.commit()
+
+    return {"msg": "Theme created"}, HTTPStatus.CREATED
 
 
 @bp_tema.route('/<int:tema_id>', methods=['PATCH, PUT'])
