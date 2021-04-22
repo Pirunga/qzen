@@ -8,7 +8,7 @@ from quiz.models.alternativa_model import AlternativaModel
 from quiz.models.pergunta_tema_model import PerguntaTemaModel
 from quiz.models.tema_model import TemaModel
 from quiz.models.user_model import UserModel
-from quiz.serializers.user_serializer import UserSerializer
+from quiz.serializers.user_serializer import user_serializer
 
 
 bp_usuario = Blueprint("usuario_view", __name__, url_prefix="/usuario")
@@ -36,7 +36,7 @@ def novo_usuario():
     session.add(usuario)
     session.commit()
     
-    user_serializer = UserSerializer(usuario.id)
+    user_serializer = user_serializer(usuario.id)
 
     return user_serializer, HTTPStatus.CREATED
 
@@ -65,7 +65,7 @@ def login_user():
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])
 def perguntas_do_usuario(usuario_id):
     
-    user_serializer = UserSerializer(usuario_id)
+    user_serializer = user_serializer(usuario_id)
     
     if not user_serializer:
         return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND

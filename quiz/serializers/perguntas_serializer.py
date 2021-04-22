@@ -17,14 +17,13 @@ def serialize_perguntas(perguntas_list):
                     "alternativa1": alternativas.alternativa1, 
                     "alternativa2": alternativas.alternativa2, 
                     "alternativa3": alternativas.alternativa3
-                    }
+                }
             })
     
     return serialized
 
 
 def serialize_pergunta(pergunta):
-    
     alternativas = AlternativaModel.query.filter(AlternativaModel.pergunta_id == pergunta.id).first()
 
     serialized = {
@@ -36,7 +35,7 @@ def serialize_pergunta(pergunta):
                     "alternativa1": alternativas.alternativa1, 
                     "alternativa2": alternativas.alternativa2, 
                     "alternativa3": alternativas.alternativa3
-                    }
+                }
             }
     
     return serialized

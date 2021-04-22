@@ -1,12 +1,11 @@
 from quiz.models.user_model import UserModel
 from googlesearch import search
 
-def UserSerializer(user_id: int):
-    
+
+def user_serializer(user_id: int):
     user = UserModel.query.get(user_id)
     
     if not user:
-        
         return False
     
     lista_perguntas = user.lista_perguntas
