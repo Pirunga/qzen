@@ -3,12 +3,8 @@ from flask_jwt_extended import create_access_token, create_refresh_token, jwt_re
 from datetime import timedelta
 from http import HTTPStatus
 
-from quiz.models.pergunta_model import PerguntaModel
-from quiz.models.alternativa_model import AlternativaModel
-from quiz.models.pergunta_tema_model import PerguntaTemaModel
-from quiz.models.tema_model import TemaModel
 from quiz.models.user_model import UserModel
-from quiz.serializers.user_serializer import user_serializer
+from quiz.serializers.user_serializer import usario_serializer
 
 
 bp_usuario = Blueprint("usuario_view", __name__, url_prefix="/usuario")
@@ -35,8 +31,8 @@ def novo_usuario():
 
     session.add(usuario)
     session.commit()
-    
-    serialized = user_serializer(usuario.id)
+
+    serialized = usario_serializer(usuario.id)
 
     return serialized, HTTPStatus.CREATED
 
@@ -64,14 +60,13 @@ def login_user():
 
 @bp_usuario.route("/<int:usuario_id>", methods=["GET"])
 def perguntas_do_usuario(usuario_id):
-    
-    serialized = user_serializer(usuario_id)
-    
+    serialized = usario_serializer(usuario_id)
+
     if not serialized:
         return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
         
-    name = user_serializer.get('nome')
-    questions = user_serializer.get('perguntas')
+    name = serialized.get('nome')
+    questions = serialized.get('perguntas')
         
     return {'nome': name, 'perguntas': questions}, HTTPStatus.OK
 
