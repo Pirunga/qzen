@@ -6,14 +6,16 @@ class TemaModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     tema = db.Column(db.String, nullable=False, unique=True)
-    # usuario_id = db.Column(
-    #     db.Integer,
-    #     db.ForeignKey(
-    #         "usuarios.id",
-    #         onupdate="CASCADE",
-    #         ondelete="CASCADE",
-    #     ),
-    # )
+
+    usuario_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "usuarios.id",
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
 
     pergunta_list = db.relationship(
         "PerguntaModel",
