@@ -15,5 +15,5 @@ class AlternativaModel(db.Model):
         "PerguntaModel",
         lazy="joined",
         uselist=False,
-        backref=db.backref("questions", lazy="joined"),
+        backref=db.backref("quetions", lazy="joined"),
     )

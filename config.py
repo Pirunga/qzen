@@ -15,7 +15,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = getenv("DATABASE_URL")
-    JSON_SORT_KEYS = getenv("JSON_SORT_KEYS")
+    JSON_SORT_KEYS = False
     DEBUG = True
 
 
