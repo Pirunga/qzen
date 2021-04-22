@@ -18,7 +18,10 @@ bp_tema = Blueprint("tema_view", __name__, url_prefix="/tema")
 
 @bp_tema.route("/<string:tema>", methods=["GET"])
 def pergunta_do_tema(tema):
-    select = TemaModel.query.filter_by(tema = tema).first()
+    select = TemaModel.query.filter_by(tema=tema).first()
+
+    if not select:
+        return {'msg': 'Theme not found'}, HTTPStatus.NOT_FOUND
 
     lista = serializer_temas(select)[0]
 
@@ -27,14 +30,25 @@ def pergunta_do_tema(tema):
 
     return {"msg": "Questions not found"}, HTTPStatus.NOT_FOUND
 
+
 @bp_tema.route("/", methods=["POST"])
 @jwt_required()
 def novo_tema():
-    user_id = get_jwt_identity()
-    body = request.get_json()
     session = current_app.db.session
 
-    table_theme = TemaModel(tema = body['tema'], usuario_id =  user_id)
+    user_id = get_jwt_identity()
+
+    if not user_id:
+        return {'msg': 'User not found'}, HTTPStatus.NOT_FOUND
+
+    body = request.get_json()
+
+    new_tema = body.get('tema')
+
+    if not new_tema:
+        return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
+
+    table_theme = TemaModel(tema=new_tema, usuario_id=user_id)
 
     session.add(table_theme)
     session.commit()
@@ -47,6 +61,9 @@ def novo_tema():
 def atualizar_tema(tema_id):
     session = current_app.db.session
     usuario_id = get_jwt_identity()
+
+    if not usuario_id:
+        return {'msg': 'User not found'}, HTTPStatus.UNAUTHORIZED
 
     body = request.get_json()
 
@@ -77,6 +94,9 @@ def delete_tema(tema_id):
     session = current_app.db.session
 
     usuario_id = get_jwt_identity()
+
+    if not usuario_id:
+        return {'msg': 'User not found'}, HTTPStatus.UNAUTHORIZED
 
     found_tema: TemaModel = TemaModel.query.get(tema_id)
 

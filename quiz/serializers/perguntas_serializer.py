@@ -10,6 +10,7 @@ def serialize_perguntas(perguntas_list):
 
         serialized.append({
                 "id": pergunta.id,
+                "pergunta": pergunta.pergunta,
                 "resposta": pergunta.resposta,
                 "temas": [tema.tema for tema in pergunta.tema_list],
                 "alternativas": {
@@ -28,6 +29,7 @@ def serialize_pergunta(pergunta):
 
     serialized = {
                 "id": pergunta.id,
+                "pergunta": pergunta.pergunta,
                 "resposta": pergunta.resposta,
                 "temas": [tema.tema for tema in pergunta.tema_list],
                 "alternativas": {
