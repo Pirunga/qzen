@@ -3,8 +3,6 @@ from http import HTTPStatus
 import random
 from flask_jwt_extended import (
     get_jwt_identity,
-    create_access_token,
-    create_refresh_token,
     jwt_required,
 )
 
@@ -13,6 +11,8 @@ from quiz.models.alternativa_model import AlternativaModel
 from quiz.models.pergunta_tema_model import PerguntaTemaModel
 from quiz.models.tema_model import TemaModel
 from quiz.models.user_model import UserModel
+
+from quiz.serializers.perguntas_serializer import serialize_perguntas, serialize_pergunta
 
 
 bp_pergunta = Blueprint("pergunta_view", __name__, url_prefix="/pergunta")
@@ -29,36 +29,21 @@ def todas_pergutnas():
             found_tema = TemaModel.query.filter(TemaModel.tema == given_tema).first()
 
             if not found_tema:
-                return {"msg": "This 'tema' doesn't exist."}, HTTPStatus.BAD_REQUEST
+                return {"msg": "Theme not found."}, HTTPStatus.NOT_FOUND
             
             perguntas = session.query(PerguntaModel).join(PerguntaTemaModel).filter(PerguntaTemaModel.tema_id == found_tema.id).all()
             
-            response = [
-            {
-                "id": pergunta.id,
-                "resposta": pergunta.resposta,
-                "temas": [tema.tema for tema in pergunta.tema_list],
-            }
-            for pergunta in perguntas
-        ]
+            response = serialize_perguntas(perguntas)
 
             return {"data": response}, HTTPStatus.OK
 
         perguntas = PerguntaModel.query.all()
 
-        response = [
-            {
-                "id": pergunta.id,
-                "resposta": pergunta.resposta,
-                "temas": [tema.tema for tema in pergunta.tema_list],
-            }
-            for pergunta in perguntas
-        ]
+        response = serialize_perguntas(perguntas)
         
         return {"data": response}, HTTPStatus.OK
 
     except:
-
         return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
@@ -68,12 +53,11 @@ def pergunta_aleatoria():
         given_tema = request.args.get("tema")
 
         if given_tema:
-
             session = current_app.db.session
             found_tema = TemaModel.query.filter(TemaModel.tema == given_tema).first()
 
             if not found_tema:
-                return {"msg": "This 'tema' doesn't exist."}, HTTPStatus.BAD_REQUEST
+                return {"msg": "Theme not found"}, HTTPStatus.NOT_FOUND
 
             pergunta = random.choice(
                 session.query(PerguntaModel)
@@ -81,26 +65,18 @@ def pergunta_aleatoria():
                 .filter(PerguntaTemaModel.tema_id == found_tema.id)
                 .all()
             )
-            response = {
-                "id": pergunta.id,
-                "resposta": pergunta.resposta,
-                "temas": [tema.tema for tema in pergunta.tema_list],
-            }
+
+            response = serialize_pergunta(pergunta)
 
             return {"data": response}, HTTPStatus.OK
 
         pergunta = random.choice(PerguntaModel.query.all())
 
-        response = {
-            "id": pergunta.id,
-            "resposta": pergunta.resposta,
-            "temas": [tema.tema for tema in pergunta.tema_list],
-        }
+        response = serialize_pergunta(pergunta)
 
         return {"data": response}, HTTPStatus.OK
 
     except:
-
         return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
@@ -109,43 +85,56 @@ def pergunta_por_id(pergunta_id):
     try:
         pergunta = PerguntaModel.query.get(pergunta_id)
 
-        response = {
-            "id": pergunta.id,
-            "resposta": pergunta.resposta,
-            "temas": pergunta.tema_list,
-        }
+        response = serialize_pergunta(pergunta)
 
         return {"data": response}, HTTPStatus.OK
 
     except AttributeError:
-
-        return {"msg": "This 'pergunta' doesn't exist."}, HTTPStatus.BAD_REQUEST
+        return {"msg": "Question not found."}, HTTPStatus.NOT_FOUND
 
     except Exception:
-
         return {"msg": "Something went wrong."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
-@bp_pergunta.route("/<int:pergunta_id>", methods=["POST"])
+@bp_pergunta.route("/", methods=["POST"])
 @jwt_required()
-def criar_pergunta_nova(pergunta_id):
+def criar_pergunta_nova():
     session = current_app.db.session
     body = request.get_json()
 
-    usuario_id = get_jwt_identity()
-
     try:
+        usuario_id = get_jwt_identity()
+
         pergunta = body.get('pergunta')
         resposta = body.get('resposta')
+        tema = body.get('tema')
+        alternativas = body.get('alternativas')
 
         nova_pergunta: PerguntaModel = PerguntaModel(pergunta=pergunta, resposta=resposta, usuario_id=usuario_id)
         session.add(nova_pergunta)
+
+        found_tema: TemaModel = TemaModel.query.filter_by(tema=tema).first()
+
+        if not found_tema:
+            return {'msg': 'Tema not found'}, HTTPStatus.NOT_FOUND
+
+        pergunta_tema: PerguntaTemaModel = PerguntaTemaModel(pergunta_id=nova_pergunta.id, tema_id=found_tema.id)
+
+        session.add_all([nova_pergunta, pergunta_tema])
+
+        session.commit()
+
+        alternativas["pergunta_id"] = nova_pergunta.id
+
+        nova_alternativas: AlternativaModel = AlternativaModel(**alternativas)
+
+        session.add(nova_alternativas)
         session.commit()
 
         return {"msg": "Created question"}, HTTPStatus.CREATED
 
-    except AttributeError:
-        return {"msg": "Verify your request"}, HTTPStatus.BAD_REQUEST
+    except:
+        return {"msg": "Verify body request"}, HTTPStatus.BAD_REQUEST
 
 
 @bp_pergunta.route("/<int:pergunta_id>", methods=["DELETE"])
@@ -180,11 +169,11 @@ def atualizar_pergunta(pergunta_id):
 
         pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
 
-        if usuario_id != pergunta.usuario_id:
-            return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
-
         if not pergunta:
             return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
+
+        if usuario_id != pergunta.usuario_id:
+            return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
 
         for key, value in body.items():
             if value and key != 'id':
@@ -193,13 +182,9 @@ def atualizar_pergunta(pergunta_id):
         session.add(pergunta)
         session.commit()
 
-        return {
-                   "pergunta": {
-                       "pergunta": pergunta.pergunta,
-                       "resposta": pergunta.resposta
-                   }
-               }, HTTPStatus.OK
+        response = serialize_pergunta(pergunta)
 
-    except KeyError:
-        return {'msg': 'Verify the request body'}, HTTPStatus.BAD_REQUEST
+        return {"data": response}, HTTPStatus.OK
 
+    except:
+        return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
