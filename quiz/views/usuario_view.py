@@ -2,6 +2,7 @@ from flask import Blueprint, request, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from datetime import timedelta
 from http import HTTPStatus
+from sqlalchemy import delete
 
 from quiz.models.user_model import UserModel
 from quiz.serializers.user_serializer import usario_serializer
@@ -46,7 +47,7 @@ def login_user():
     found_user: UserModel = UserModel.query.filter_by(email=email).first()
 
     if not found_user or not found_user.check_password(password):
-        return {"msg": "Usuário não encontrado."}, HTTPStatus.BAD_REQUEST
+        return {"msg": "User not found."}, HTTPStatus.NOT_FOUND
 
     access_token = create_access_token(
         identity=found_user.id, expires_delta=timedelta(days=5)
@@ -63,7 +64,7 @@ def perguntas_do_usuario(usuario_id):
     serialized = usario_serializer(usuario_id)
 
     if not serialized:
-        return {'msg': 'Usuário não encontrado'}, HTTPStatus.NOT_FOUND
+        return {'msg': 'User not found'}, HTTPStatus.NOT_FOUND
         
     name = serialized.get('nome')
     questions = serialized.get('perguntas')
@@ -77,12 +78,15 @@ def deletar_usuario():
     session = current_app.db
 
     id_user = get_jwt_identity()
-    found_user = UserModel.query.get(id_user)
-    
+    found_user: UserModel = UserModel.query.get(id_user)
+
+    if not found_user:
+        return {'msg': 'User not found'}, HTTPStatus.NOT_FOUND
+
     session.delete(found_user)
     session.commit()
 
-    return {"msg": "Usuário deletado"}, HTTPStatus.OK
+    return {"msg": "Delete User"}, HTTPStatus.OK
 
 
 @bp_usuario.route("/", methods=["PATCH", "PUT"])

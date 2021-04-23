@@ -9,11 +9,12 @@ class AlternativaModel(db.Model):
     alternativa2 = db.Column(db.String, nullable=False)
     alternativa3 = db.Column(db.String, nullable=False)
 
-    pergunta_id = db.Column(db.Integer, db.ForeignKey("perguntas.id"), nullable=False)
-
-    lista_pergunta = db.relationship(
-        "PerguntaModel",
-        lazy="joined",
-        uselist=False,
-        backref=db.backref("quetions", lazy="joined"),
+    pergunta_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "perguntas.id",
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
     )

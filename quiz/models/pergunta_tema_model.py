@@ -8,12 +8,12 @@ class PerguntaTemaModel(db.Model):
 
     pergunta_id = db.Column(
         db.Integer,
-        db.ForeignKey("perguntas.id", onupdate="CASCADE", ondelete="CASCADE"),
+        db.ForeignKey("perguntas.id", onupdate="CASCADE", ondelete="CASCADE",),
         nullable=False,
     )
 
     tema_id = db.Column(
         db.Integer,
-        db.ForeignKey("temas.id", onupdate="CASCADE", ondelete="CASCADE"),
+        db.ForeignKey("temas.id", onupdate="CASCADE", ondelete="CASCADE",),
         nullable=False,
     )

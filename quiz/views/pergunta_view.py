@@ -160,30 +160,44 @@ def deletar_pergunta(pergunta_id):
 @bp_pergunta.route("/<int:pergunta_id>", methods=["PATCH", "PUT"])
 @jwt_required()
 def atualizar_pergunta(pergunta_id):
-    # try:
-    session = current_app.db.session
-    body = request.get_json()
+    try:
+        session = current_app.db.session
+        body = request.get_json()
 
-    usuario_id = get_jwt_identity()
+        new_pergunta = body.get('pergunta')
+        new_respota = body.get('resposta')
+        new_tema = body.get('tema')
 
-    pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
+        found_tema: TemaModel = TemaModel.query.filter_by(tema=new_tema).first()
 
-    if not pergunta:
-        return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
+        if not found_tema:
+            return {'msg': 'Theme not found'}, HTTPStatus.NOT_FOUND
 
-    if usuario_id != pergunta.usuario_id:
-        return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
+        usuario_id = get_jwt_identity()
 
-    for key, value in body.items():
-        if value and key != 'id':
-            pergunta[key] = value
+        pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
 
-    session.add(pergunta)
-    session.commit()
+        if not pergunta:
+            return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
 
-    response = serialize_pergunta(pergunta)
+        if usuario_id != pergunta.usuario_id:
+            return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
 
-    return {"data": response}, HTTPStatus.OK
+        if body.get('id'):
+            return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
 
-    # except AttributeError:
-    #     return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
+        pergunta_tema: PerguntaTemaModel = PerguntaTemaModel.query.filter_by(pergunta_id=pergunta_id).first()
+
+        pergunta.pergunta = new_pergunta
+        pergunta.resposta = new_respota
+        pergunta_tema.tema_id = found_tema.id
+
+        session.add(pergunta)
+        session.commit()
+
+        response = serialize_pergunta(pergunta)
+
+        return {"data": response}, HTTPStatus.OK
+
+    except AttributeError:
+        return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
