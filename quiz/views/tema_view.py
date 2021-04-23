@@ -48,14 +48,14 @@ def novo_tema():
     return {"msg": "Theme created"}, HTTPStatus.CREATED
 
 
-@bp_tema.route('/<int:tema_id>', methods=['PATCH, PUT'])
+@bp_tema.route('/<int:tema_id>', methods=['PATCH', 'PUT'])
 @jwt_required()
 def atualizar_tema(tema_id):
     session = current_app.db.session
     usuario_id = get_jwt_identity()
 
     if not usuario_id:
-        return {'msg': 'User not found'}, HTTPStatus.UNAUTHORIZED
+        return {'msg': 'User Unauthorized'}, HTTPStatus.UNAUTHORIZED
 
     body = request.get_json()
 
