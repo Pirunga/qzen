@@ -160,30 +160,30 @@ def deletar_pergunta(pergunta_id):
 @bp_pergunta.route("/<int:pergunta_id>", methods=["PATCH", "PUT"])
 @jwt_required()
 def atualizar_pergunta(pergunta_id):
-    try:
-        session = current_app.db.session
-        body = request.get_json()
+    # try:
+    session = current_app.db.session
+    body = request.get_json()
 
-        usuario_id = get_jwt_identity()
+    usuario_id = get_jwt_identity()
 
-        pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
+    pergunta: PerguntaModel = PerguntaModel.query.get(pergunta_id)
 
-        if not pergunta:
-            return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
+    if not pergunta:
+        return {'msg': 'Question not found'}, HTTPStatus.NOT_FOUND
 
-        if usuario_id != pergunta.usuario_id:
-            return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
+    if usuario_id != pergunta.usuario_id:
+        return {'msg': 'Unauthorized user'}, HTTPStatus.UNAUTHORIZED
 
-        for key, value in body.items():
-            if value and key != 'id':
-                pergunta[key] = value
+    for key, value in body.items():
+        if value and key != 'id':
+            pergunta[key] = value
 
-        session.add(pergunta)
-        session.commit()
+    session.add(pergunta)
+    session.commit()
 
-        response = serialize_pergunta(pergunta)
+    response = serialize_pergunta(pergunta)
 
-        return {"data": response}, HTTPStatus.OK
+    return {"data": response}, HTTPStatus.OK
 
-    except AttributeError:
-        return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
+    # except AttributeError:
+    #     return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
