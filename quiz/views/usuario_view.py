@@ -14,11 +14,15 @@ bp_usuario = Blueprint("usuario_view", __name__, url_prefix="/usuario")
 @bp_usuario.route("/", methods=["GET"])
 @jwt_required()
 def buscar_usuario():
-    usuario_id = get_jwt_identity()
+    try:
+        usuario_id = get_jwt_identity()
 
-    serialized = usario_serializer(usuario_id)
+        serialized = usario_serializer(usuario_id)
 
-    return serialized, HTTPStatus.OK
+        return serialized, HTTPStatus.OK
+
+    except:
+        return {'msg': "Something went wrong"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 @bp_usuario.route("/register", methods=["POST"])
@@ -85,7 +89,7 @@ def perguntas_do_usuario(usuario_id):
 @bp_usuario.route("/", methods=["DELETE"])
 @jwt_required()
 def deletar_usuario():
-    session = current_app.db
+    session = current_app.db.session
 
     id_user = get_jwt_identity()
     found_user: UserModel = UserModel.query.get(id_user)
