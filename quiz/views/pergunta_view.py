@@ -185,5 +185,5 @@ def atualizar_pergunta(pergunta_id):
 
         return {"data": response}, HTTPStatus.OK
 
-    except:
+    except AttributeError:
         return {'msg': 'Verify body request'}, HTTPStatus.BAD_REQUEST
