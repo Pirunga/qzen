@@ -72,7 +72,7 @@ def perguntas_do_usuario(usuario_id):
 
 
 @bp_usuario.route("/", methods=["DELETE"])
-@jwt_required(refresh=True)
+@jwt_required()
 def deletar_usuario():
     session = current_app.db
 
